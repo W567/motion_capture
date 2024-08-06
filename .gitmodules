@@ -1,0 +1,13 @@
+[submodule "third_party/4D-Humans"]
+	path = third_party/4D-Humans
+	url = https://github.com/ojh6404/4D-Humans.git
+	branch = patch-python3.8
+[submodule "third_party/hamer"]
+	path = third_party/hamer
+	url = https://github.com/ojh6404/hamer.git
+[submodule "third_party/Arbitrary-Hands-3D-Reconstruction"]
+	path = third_party/Arbitrary-Hands-3D-Reconstruction
+	url = https://github.com/ojh6404/Arbitrary-Hands-3D-Reconstruction.git
+[submodule "third_party/frankmocap"]
+	path = third_party/frankmocap
+	url = https://github.com/ojh6404/frankmocap.git
