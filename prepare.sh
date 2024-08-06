@@ -1,9 +1,9 @@
 #!/usr/bin/bash
 
 git submodule update --init --recursive
+pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
 pip install -e .
 pip install -U "setuptools<70"
-pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu121
 export FORCE_CUDA=1
 pip install git+https://github.com/facebookresearch/pytorch3d.git
 
