@@ -343,6 +343,9 @@ class HamerModel(MocapModelBase):
                 #     vis_im = draw_axis(vis_im, hand_origin[i], y_axis_rotated, (0, 255, 0))  # y: green
                 #     vis_im = draw_axis(vis_im, hand_origin[i], z_axis_rotated, (255, 0, 0))  # z: blue
 
+        else:  # no detections
+            vis_im = im.copy()
+
         return mocap_results, vis_im
 
     def __del__(self):
