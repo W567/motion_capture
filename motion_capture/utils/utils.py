@@ -12,7 +12,7 @@ THIRD_PARTY_ROOT = os.path.join(PACKAGE_ROOT, "third_party")
 # hand object detector and frankmocap paths
 FRANKMOCAP_PATH = os.path.join(THIRD_PARTY_ROOT, "frankmocap")
 HAND_OBJECT_MODEL_PATH = FRANKMOCAP_PATH + "/detectors/hand_object_detector/lib"
-FONT_PATH = HAND_OBJECT_MODEL_PATH + "/model/utils/times_b.ttf"
+FONT_PATH = HAND_OBJECT_MODEL_PATH + "/hand_object_detector/utils/times_b.ttf"
 CHECKPOINT_FILE = FRANKMOCAP_PATH + "/extra_data/hand_module/hand_detector/faster_rcnn_1_8_132028.pth"
 FRANKMOCAP_CHECKPOINT = FRANKMOCAP_PATH + "/extra_data/hand_module/pretrained_weights/pose_shape_best.pth"
 SMPL_DIR = FRANKMOCAP_PATH + "/extra_data/smpl/"

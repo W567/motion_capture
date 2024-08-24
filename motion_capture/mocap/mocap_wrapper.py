@@ -3,6 +3,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 import sys
 import torch
 import numpy as np
@@ -49,16 +50,15 @@ LABEL_ANNOTATOR = sv.LabelAnnotator()
 
 from motion_capture.detector import DetectionResult
 
+
 @dataclass
 class MocapResult:
     detection: DetectionResult
     position: np.ndarray
     orientation: np.ndarray
-    keypoint_names: np.ndarray
+    keypoint_names: List[str]
     keypoints: np.ndarray
-
-
-    
+    keypoints_2d: np.ndarray
 
 
 class MocapModelFactory:
@@ -83,9 +83,9 @@ class MocapModelBase(ABC):
 class FrankMocapHandModel(MocapModelBase):
     def __init__(
         self,
-        img_size: tuple = (640, 480),
-        render_type: str = "opengl",
-        visualize: bool = True,
+        img_size: tuple = (640, 480),  # (width, height)
+        render_type: str = "opengl",  # pytorch3d, opendr, opengl
+        visualize: bool = True,  # whether to visualize the result
         device: str = "cuda:0",
     ):
         self.display = Display(visible=0, size=img_size)
@@ -134,7 +134,6 @@ class FrankMocapHandModel(MocapModelBase):
 
                     joint_3d_coords = pred_output_list[0][hand]["pred_joints_smpl"]  # (21, 3)
 
-
                     # for detection in detections:
                     #     if detection.label == hand:
                     #         detection.pose = hand_pose
@@ -169,11 +168,11 @@ class FrankMocapHandModel(MocapModelBase):
 class HamerModel(MocapModelBase):
     def __init__(
         self,
-        focal_length: float = 525.0,
-        rescale_factor: float = 2.0,
-        img_size: tuple = (640, 480),
-        visualize: bool = True,
-        device: str = "cuda:0",
+        focal_length: float = 525.0,  # focal length
+        rescale_factor: float = 2.0,  # rescale factor for hand detection
+        img_size: tuple = (640, 480),  # (width, height)
+        visualize: bool = True,  # whether to visualize the result
+        device: str = "cuda:0",  # device
     ):
         self.display = Display(visible=0, size=img_size)
         self.display.start()
@@ -205,9 +204,7 @@ class HamerModel(MocapModelBase):
         mocap_results = []
         if detections:
             boxes = np.array([detection.rect for detection in detections])  # x1, y1, x2, y2
-            right = np.array(
-                [1 if detection.label == "right_hand" else 0 for detection in detections]
-            )
+            right = np.array([1 if detection.label == "right_hand" else 0 for detection in detections])
 
             # TODO clean it and fix this not to use datasetloader
             dataset = HamerViTDetDataset(self.model_cfg, im, boxes, right, rescale_factor=self.rescale_factor)
@@ -285,10 +282,11 @@ class HamerModel(MocapModelBase):
                 assert len(MANO_KEYPOINT_NAMES) == len(pred_keypoints_3d[i]), "Keypoint mismatch"
                 mocap_result = MocapResult(
                     detection=detections[i],
-                    position=pred_keypoints_3d[i][0], # wrist position
+                    position=pred_keypoints_3d[i][0],  # wrist position
                     orientation=quat,
                     keypoint_names=MANO_KEYPOINT_NAMES,
                     keypoints=pred_keypoints_3d[i],
+                    keypoints_2d=pred_keypoints_2d[i],
                 )
                 mocap_results.append(mocap_result)
 
@@ -332,10 +330,7 @@ class HamerModel(MocapModelBase):
                     )
                     rgb = rgba[..., :3].astype(np.float32)
                     alpha = rgba[..., 3].astype(np.float32) / 255.0
-                    vis_im = (
-                        alpha[..., None] * rgb
-                        + (1 - alpha[..., None]) * vis_im
-                    ).astype(np.uint8)
+                    vis_im = (alpha[..., None] * rgb + (1 - alpha[..., None]) * vis_im).astype(np.uint8)
 
                 # for i in range(len(detections)):
                 #     # visualize hand orientation
@@ -344,7 +339,10 @@ class HamerModel(MocapModelBase):
                 #     vis_im = draw_axis(vis_im, hand_origin[i], z_axis_rotated, (255, 0, 0))  # z: blue
 
         else:  # no detections
-            vis_im = im.copy()
+            if detection_im is not None:
+                vis_im = detection_im.copy()
+            else:
+                vis_im = im.copy()
 
         return mocap_results, vis_im
 
@@ -385,7 +383,7 @@ class HMR2Model(MocapModelBase):
                 height=self.img_size[1],
             )
 
-    def predict(self, detections, im, vis_im):
+    def predict(self, detections, im, detection_im):
         # im : BGR image
         mocap_results = []
         if detections:
@@ -447,20 +445,20 @@ class HMR2Model(MocapModelBase):
                 y_axis_rotated = rotation @ y_axis
                 z_axis_rotated = rotation @ z_axis
                 # visualize hand orientation
-                vis_im = draw_axis(vis_im, body_origin[i], x_axis_rotated, (0, 0, 255))  # x: red
-                vis_im = draw_axis(vis_im, body_origin[i], y_axis_rotated, (0, 255, 0))  # y: green
-                vis_im = draw_axis(vis_im, body_origin[i], z_axis_rotated, (255, 0, 0))  # z: blue
+                # vis_im = draw_axis(vis_im, body_origin[i], x_axis_rotated, (0, 0, 255))  # x: red
+                # vis_im = draw_axis(vis_im, body_origin[i], y_axis_rotated, (0, 255, 0))  # y: green
+                # vis_im = draw_axis(vis_im, body_origin[i], z_axis_rotated, (255, 0, 0))  # z: blue
 
                 assert len(SPIN_KEYPOINT_NAMES) == len(pred_keypoints_3d[i]), "Keypoint mismatch"
                 mocap_result = MocapResult(
                     detection=detections[i],
-                    position=pred_keypoints_3d[i][0], #
+                    position=pred_keypoints_3d[i][0],  #
                     orientation=quat,
                     keypoint_names=SPIN_KEYPOINT_NAMES,
                     keypoints=pred_keypoints_3d[i],
+                    keypoints_2d=pred_keypoints_2d[i],
                 )
                 mocap_results.append(mocap_result)
-
 
             if self.visualize:
                 all_verts = []
@@ -483,11 +481,11 @@ class HMR2Model(MocapModelBase):
                     vis_im = (
                         alpha[..., None] * rgb + (1 - alpha[..., None]) * cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
                     ).astype(np.uint8)
-
-                # Draw 2D keypoints
-                for i, keypoints in enumerate(pred_keypoints_2d):
-                    for j, keypoint in enumerate(keypoints):
-                        cv2.circle(vis_im, (int(keypoint[0]), int(keypoint[1])), 5, (0, 255, 0), -1)
+        else:  # no detections
+            if detection_im is not None:
+                vis_im = detection_im.copy()
+            else:
+                vis_im = im.copy()
 
         return mocap_results, vis_im
 
