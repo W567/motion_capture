@@ -542,3 +542,22 @@ def recursive_to(x, target: torch.device):
         return [recursive_to(i, target) for i in x]
     else:
         return x
+
+
+def draw_hand_keypoints(img: np.ndarray, keypoints: np.ndarray):
+    hsv_colors = np.zeros((21, 3), dtype=np.uint8)
+    hsv_colors[:, 0] = np.linspace(0, 180, 21, endpoint=True)  # Hue
+    hsv_colors[:, 1] = 255  # Saturation
+    hsv_colors[:, 2] = 255  # Value
+    colors = cv2.cvtColor(hsv_colors.reshape(1, 21, 3), cv2.COLOR_HSV2BGR).reshape(21, 3)
+
+    # draw connections and keypoints
+    for color, connection in zip(colors, MANO_JOINTS_CONNECTION):
+        cv2.line(
+            img,
+            tuple(keypoints[connection[0]].astype(int)),
+            tuple(keypoints[connection[1]].astype(int)),
+            color.tolist(),
+            2,
+        )
+    return img

@@ -30,6 +30,7 @@ from motion_capture.utils.utils import (
     HAMER_CHECKPOINT_PATH,
     HAMER_CONFIG_PATH,
     Renderer,
+    draw_hand_keypoints,
 )
 
 # frankmocap hand
@@ -331,6 +332,9 @@ class HamerModel(MocapModelBase):
                     rgb = rgba[..., :3].astype(np.float32)
                     alpha = rgba[..., 3].astype(np.float32) / 255.0
                     vis_im = (alpha[..., None] * rgb + (1 - alpha[..., None]) * vis_im).astype(np.uint8)
+
+                for pred_keypoint_2d in pred_keypoints_2d:
+                    vis_im = draw_hand_keypoints(vis_im, pred_keypoint_2d)
 
                 # for i in range(len(detections)):
                 #     # visualize hand orientation
