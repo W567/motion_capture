@@ -312,6 +312,7 @@ class HamerModel(MocapModelBase):
                     )
                     rgb = rgba[..., :3].astype(np.float32)
                     alpha = rgba[..., 3].astype(np.float32) / 255.0
+                    vis_im = vis_im[:, :, ::-1]
                     vis_im = (
                         alpha[..., None] * rgb
                         + (1 - alpha[..., None]) * vis_im
