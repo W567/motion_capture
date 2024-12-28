@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import sys
 import torch
 import numpy as np
+from typing import Tuple
 import cv2
 import supervision as sv
 from pyvirtualdisplay import Display
@@ -58,9 +59,6 @@ class MocapResult:
     keypoints: np.ndarray
 
 
-    
-
-
 class MocapModelFactory:
     @staticmethod
     def from_config(model: str, model_config: dict):
@@ -83,12 +81,12 @@ class MocapModelBase(ABC):
 class FrankMocapHandModel(MocapModelBase):
     def __init__(
         self,
-        img_size: tuple = (640, 480),
+        img_size: Tuple[int, int] = (640, 480),
         render_type: str = "opengl",
         visualize: bool = True,
         device: str = "cuda:0",
     ):
-        self.display = Display(visible=0, size=img_size)
+        self.display = Display(visible=False, size=img_size)
         self.display.start()
         self.img_size = img_size
         self.visualize = visualize
@@ -171,11 +169,11 @@ class HamerModel(MocapModelBase):
         self,
         focal_length: float = 525.0,
         rescale_factor: float = 2.0,
-        img_size: tuple = (640, 480),
+        img_size: Tuple[int, int] = (640, 480),
         visualize: bool = True,
         device: str = "cuda:0",
     ):
-        self.display = Display(visible=0, size=img_size)
+        self.display = Display(visible=False, size=img_size)
         self.display.start()
         self.focal_length = focal_length
         self.rescale_factor = rescale_factor
@@ -212,8 +210,9 @@ class HamerModel(MocapModelBase):
             # TODO clean it and fix this not to use datasetloader
             dataset = HamerViTDetDataset(self.model_cfg, im, boxes, right, rescale_factor=self.rescale_factor)
             dataloader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False, num_workers=0)
+            batch = None
             for batch in dataloader:
-                batch = recursive_to(batch, self.device)  # to device
+                batch = recursive_to(batch, torch.device(self.device))  # to device
                 with torch.no_grad():
                     out = self.mocap(batch)
             pred_cam = out["pred_cam"]
@@ -317,12 +316,8 @@ class HamerModel(MocapModelBase):
                         alpha[..., None] * rgb
                         + (1 - alpha[..., None]) * vis_im
                     ).astype(np.uint8)
-
-                # for i in range(len(detections)):
-                #     # visualize hand orientation
-                #     vis_im = draw_axis(vis_im, hand_origin[i], x_axis_rotated, (0, 0, 255))  # x: red
-                #     vis_im = draw_axis(vis_im, hand_origin[i], y_axis_rotated, (0, 255, 0))  # y: green
-                #     vis_im = draw_axis(vis_im, hand_origin[i], z_axis_rotated, (255, 0, 0))  # z: blue
+            else:
+                vis_im = im.copy()
 
         else:  # no detections
             vis_im = im.copy()
@@ -338,11 +333,11 @@ class HMR2Model(MocapModelBase):
         self,
         focal_length: float = 525.0,
         rescale_factor: float = 2.0,
-        img_size: tuple = (640, 480),
+        img_size: Tuple[int, int] = (640, 480),
         visualize: bool = True,
         device: str = "cuda:0",
     ):
-        self.display = Display(visible=0, size=img_size)
+        self.display = Display(visible=False, size=img_size)
         self.display.start()
         self.focal_length = focal_length
         self.rescale_factor = rescale_factor
@@ -375,8 +370,9 @@ class HMR2Model(MocapModelBase):
             # TODO clean it and fix this not to use datasetloader
             dataset = HMR2ViTDetDataset(self.model_cfg, im, boxes)
             dataloader = torch.utils.data.DataLoader(dataset, batch_size=8, shuffle=False, num_workers=0)
+            batch = None
             for batch in dataloader:
-                batch = recursive_to(batch, self.device)  # to device
+                batch = recursive_to(batch, torch.device(self.device))  # to device
                 with torch.no_grad():
                     out = self.mocap(batch)
             pred_cam = out["pred_cam"]
