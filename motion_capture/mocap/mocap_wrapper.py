@@ -31,6 +31,7 @@ from motion_capture.utils.utils import (
     HAMER_CHECKPOINT_PATH,
     HAMER_CONFIG_PATH,
     Renderer,
+    draw_hand_keypoints,
 )
 
 # frankmocap hand
