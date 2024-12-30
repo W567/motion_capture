@@ -293,7 +293,10 @@ class HamerModel(MocapModelBase):
                     joint_rotation[:, 1::3] *= -1
                     joint_rotation[:, 2::3] *= -1
 
-                quat = rotation_matrix_to_quaternion(rotation)  # [w, x, y, z]
+                joint_rotation = np.concatenate([rotation[None, :], joint_rotation], axis=0) # [21, 3, 3]
+
+                quat = R.from_matrix(rotation).as_quat() # [N, 4] [x, y, z, w]
+                joint_quat = R.from_matrix(joint_rotation).as_quat()  # [N, 21, 4] [x, y, z, w]
                 assert len(MANO_KEYPOINT_NAMES) == len(pred_keypoints_3d[i]), "Keypoint mismatch"
                 mocap_result = MocapResult(
                     detection=detections[i],
