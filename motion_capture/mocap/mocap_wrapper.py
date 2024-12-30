@@ -252,7 +252,7 @@ class HamerModel(MocapModelBase):
             #     17, 18, 19, 20] # pinky
             pred_keypoints_3d = out["pred_keypoints_3d"].detach().cpu().numpy()  # [N, 21, 3]
             pred_keypoints_3d[:, :, 0] = (2 * right[:, None] - 1) * pred_keypoints_3d[:, :, 0]
-            pred_keypoints_3d += pred_cam_t_full[:, None, :]
+            pred_keypoints_3d += pred_cam_t_full[:, None, :] # wrt camera frame
 
             # hand pose
             global_orient = (
