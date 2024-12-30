@@ -21,13 +21,12 @@ from motion_capture.utils.utils import (
 )
 
 # hand object detector
-sys.path.insert(0, HAND_OBJECT_MODEL_PATH)
-from model.utils.config import cfg as hand_object_detector_cfg
-from model.utils.blob import im_list_to_blob
-from model.rpn.bbox_transform import clip_boxes
-from model.rpn.bbox_transform import bbox_transform_inv
-from model.roi_layers import nms
-from model.utils.net_utils import (
+from hand_object_detector.utils.config import cfg as hand_object_detector_cfg
+from hand_object_detector.utils.blob import im_list_to_blob
+from hand_object_detector.rpn.bbox_transform import clip_boxes
+from hand_object_detector.rpn.bbox_transform import bbox_transform_inv
+from hand_object_detector.roi_layers import nms
+from hand_object_detector.utils.net_utils import (
     vis_detections_filtered_objects,
     vis_detections_filtered_objects_PIL,
     filter_object,
