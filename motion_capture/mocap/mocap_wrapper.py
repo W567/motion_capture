@@ -289,6 +289,8 @@ class HamerModel(MocapModelBase):
                 if hand_id == 0:
                     rotation[1::3] *= -1
                     rotation[2::3] *= -1
+                    joint_rotation[:, 1::3] *= -1
+                    joint_rotation[:, 2::3] *= -1
 
                 quat = rotation_matrix_to_quaternion(rotation)  # [w, x, y, z]
                 assert len(MANO_KEYPOINT_NAMES) == len(pred_keypoints_3d[i]), "Keypoint mismatch"
