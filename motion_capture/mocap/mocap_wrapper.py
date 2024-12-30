@@ -206,9 +206,7 @@ class HamerModel(MocapModelBase):
         mocap_results = []
         if detections:
             boxes = np.array([detection.rect for detection in detections])  # x1, y1, x2, y2
-            right = np.array(
-                [1 if detection.label == "right_hand" else 0 for detection in detections]
-            )
+            right = np.array([1 if detection.label == "right_hand" else 0 for detection in detections])
 
             # TODO clean it and fix this not to use datasetloader
             dataset = HamerViTDetDataset(self.model_cfg, im, boxes, right, rescale_factor=self.rescale_factor)
