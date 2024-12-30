@@ -31,7 +31,7 @@ from hand_object_detector.utils.net_utils import (
     vis_detections_filtered_objects_PIL,
     filter_object,
 )
-from model.faster_rcnn.resnet import resnet
+from hand_object_detector.faster_rcnn.resnet import resnet
 
 np.random.seed(hand_object_detector_cfg.RNG_SEED)
 
