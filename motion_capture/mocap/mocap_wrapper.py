@@ -56,7 +56,7 @@ class MocapResult:
     detection: DetectionResult
     position: np.ndarray
     orientation: np.ndarray
-    keypoint_names: np.ndarray
+    keypoint_names: List[str]
     keypoints: np.ndarray
 
 
