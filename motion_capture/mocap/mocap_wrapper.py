@@ -313,10 +313,10 @@ class HamerModel(MocapModelBase):
                     rgb = rgba[..., :3].astype(np.float32)
                     alpha = rgba[..., 3].astype(np.float32) / 255.0
                     vis_im = vis_im[:, :, ::-1]
-                    vis_im = (
-                        alpha[..., None] * rgb
-                        + (1 - alpha[..., None]) * vis_im
-                    ).astype(np.uint8)
+                    vis_im = (alpha[..., None] * rgb + (1 - alpha[..., None]) * vis_im).astype(np.uint8)
+
+                for pred_keypoint_2d in pred_keypoints_2d:
+                    vis_im = draw_hand_keypoints(vis_im, pred_keypoint_2d)
             else:
                 vis_im = im.copy()
 
