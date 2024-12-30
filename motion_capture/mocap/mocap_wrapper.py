@@ -285,7 +285,8 @@ class HamerModel(MocapModelBase):
                 assert (
                     detections[i].label == "right_hand" if hand_id == 1 else "left_hand"
                 ), "Hand ID and hand detection mismatch"
-                rotation = global_orient[i]
+                rotation = global_orient[i] # [3, 3]
+                joint_rotation = joint_rot[i] # [20, 3, 3]
                 if hand_id == 0:
                     rotation[1::3] *= -1
                     rotation[2::3] *= -1
