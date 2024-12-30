@@ -60,7 +60,7 @@ class MocapResult:
     keypoint_names: List[str]
     keypoints: np.ndarray
     keypoints_2d: np.ndarray
-
+    keypoints_quat: np.ndarray = None
 
 class MocapModelFactory:
     @staticmethod
