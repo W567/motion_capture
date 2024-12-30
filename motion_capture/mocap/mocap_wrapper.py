@@ -243,7 +243,13 @@ class HamerModel(MocapModelBase):
             else:
                 pred_keypoints_2d = None
 
-            # 3D keypoints
+            # 3D keypoints following openpose
+            # https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/02_output.md#hand-output-format
+            # [0, 1, 2, 3, 4,     # thumb (wrist -> tip)
+            #     5, 6, 7, 8,     # index
+            #     9, 10, 11, 12,  # middle
+            #     13, 14, 15, 16, # ring
+            #     17, 18, 19, 20] # pinky
             pred_keypoints_3d = out["pred_keypoints_3d"].detach().cpu().numpy()  # [N, 21, 3]
             pred_keypoints_3d[:, :, 0] = (2 * right[:, None] - 1) * pred_keypoints_3d[:, :, 0]
             pred_keypoints_3d += pred_cam_t_full[:, None, :]
