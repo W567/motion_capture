@@ -236,8 +236,6 @@ class HamerModel(MocapModelBase):
             pred_keypoints_3d += pred_cam_t_full[:, None, :]
 
             # hand pose
-            hand_origin = np.mean(pred_keypoints_2d, axis=1)  # [N, 2]
-            hand_origin = np.concatenate([hand_origin, np.zeros((hand_origin.shape[0], 1))], axis=1)  # [N, 3]
             global_orient = (
                 out["pred_mano_params"]["global_orient"].squeeze(1).detach().cpu().numpy()
             )  # [N, 3, 3]
