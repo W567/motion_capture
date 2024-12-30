@@ -11,7 +11,6 @@ import numpy as np
 import cv2
 import supervision as sv
 
-
 # utils and constants
 from motion_capture.utils.utils import (
     PASCAL_CLASSES,
