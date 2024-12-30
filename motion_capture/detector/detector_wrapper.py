@@ -14,7 +14,6 @@ import supervision as sv
 # utils and constants
 from motion_capture.utils.utils import (
     PASCAL_CLASSES,
-    HAND_OBJECT_MODEL_PATH,
     CHECKPOINT_FILE,
     FONT_PATH,
 )
