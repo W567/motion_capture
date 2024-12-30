@@ -259,6 +259,28 @@ class HamerModel(MocapModelBase):
                 out["pred_mano_params"]["global_orient"].squeeze(1).detach().cpu().numpy()
             )  # [N, 3, 3]
 
+            # hand pose (frame orientation (rotation matrix) relative to parent frame)
+            # sequence following smplx:
+            # https://github.com/vchoutas/smplx/blob/1265df7ba545e8b00f72e7c557c766e15c71632f/smplx/joint_names.py#L206
+            # [0, 1, 2,    # index
+            #  3, 4, 5,    # middle
+            #  6, 7, 8,    # pinky
+            #  9, 10, 11,  # ring
+            #  12, 13, 14] # thumb
+            joint_rot_orig = out["pred_mano_params"]["hand_pose"].squeeze(1).detach().cpu().numpy()  # [N, 15, 3, 3]
+
+            #                        0   1  2    3  4  5  6  7   8  9 10  11 12 13   14  15 16 17 18  19
+            new_indices = np.array([12, 13, 14, -1, 0, 1, 2, -1, 3, 4, 5, -1, 9, 10, 11, -1, 6, 7, 8, -1])
+            joint_rot = joint_rot_orig[:, new_indices, :, :]
+
+            for i, index in enumerate(new_indices):
+                if index in [0, 3, 6, 9, 12]:
+                    joint_rot[:, i] = global_orient @ joint_rot[:, i]
+                elif index == -1:
+                    joint_rot[:, i] = joint_rot[:, i - 1]
+                else:
+                    joint_rot[:, i] = joint_rot[:, i - 1] @ joint_rot[:, i]
+
             for i, hand_id in enumerate(right):  # for each hand
                 assert (
                     detections[i].label == "right_hand" if hand_id == 1 else "left_hand"
