@@ -58,6 +58,7 @@ class MocapResult:
     orientation: np.ndarray
     keypoint_names: List[str]
     keypoints: np.ndarray
+    keypoints_2d: np.ndarray
 
 
 class MocapModelFactory:
