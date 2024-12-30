@@ -3,6 +3,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List
 import sys
 import torch
 import numpy as np
