@@ -241,7 +241,7 @@ class HamerModel(MocapModelBase):
                 ]  # flip x-axis for left hand
                 pred_keypoints_2d = pred_keypoints_2d * box_size[:, None, None] + box_center[:, None, :]
             else:
-                pred_keypoints_2d = None
+                pred_keypoints_2d = [None] * len(box_center)
 
             # 3D keypoints following openpose
             # https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/02_output.md#hand-output-format
