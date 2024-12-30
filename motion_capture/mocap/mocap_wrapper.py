@@ -240,6 +240,8 @@ class HamerModel(MocapModelBase):
                     :, :, 0
                 ]  # flip x-axis for left hand
                 pred_keypoints_2d = pred_keypoints_2d * box_size[:, None, None] + box_center[:, None, :]
+            else:
+                pred_keypoints_2d = None
 
             # 3D keypoints
             pred_keypoints_3d = out["pred_keypoints_3d"].detach().cpu().numpy()  # [N, 21, 3]
