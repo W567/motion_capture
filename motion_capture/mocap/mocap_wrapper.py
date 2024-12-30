@@ -305,6 +305,7 @@ class HamerModel(MocapModelBase):
                     keypoint_names=MANO_KEYPOINT_NAMES,
                     keypoints=pred_keypoints_3d[i],
                     keypoints_2d=pred_keypoints_2d[i],
+                    keypoints_quat=joint_quat,
                 )
                 mocap_results.append(mocap_result)
 
