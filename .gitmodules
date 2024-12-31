@@ -13,4 +13,4 @@
 	url = https://github.com/ojh6404/frankmocap.git
 [submodule "third_party/WiLoR"]
 	path = third_party/WiLoR
-	url = https://github.com/rolpotamias/WiLoR.git
+	url = https://github.com/W567/WiLoR.git
