@@ -24,6 +24,10 @@ HAMER_CHECKPOINT_PATH = HAMER_ROOT + "/_DATA/hamer_ckpts/checkpoints/hamer.ckpt"
 HAMER_CONFIG_PATH = HAMER_ROOT + "/_DATA/hamer_ckpts/model_config.yaml"
 HAND_COLOR = (0.65098039, 0.74117647, 0.85882353)
 
+WILOR_ROOT = os.path.join(THIRD_PARTY_ROOT, "WiLoR")
+WILOR_CHECKPOINT_PATH = WILOR_ROOT + "/pretrained_models/wilor_final.ckpt"
+WILOR_CONFIG_PATH = WILOR_ROOT + "/pretrained_models/model_config.yaml"
+
 # optical frame to world frame
 OPTICAL_TO_WORLD = np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]])
 
@@ -337,6 +341,39 @@ def load_hamer(checkpoint_path, config_path, img_size, focal_length):
         model_cfg.freeze()
 
     model = HAMER.load_from_checkpoint(checkpoint_path, strict=False, cfg=model_cfg)
+    return model, model_cfg
+
+
+def load_wilor(checkpoint_path, config_path, img_size, focal_length):
+    from wilor.configs import get_config
+    from wilor.models import WiLoR
+
+    print('Loading ', checkpoint_path)
+    model_cfg = get_config(config_path, update_cachedir=True)
+
+    model_cfg.defrost()
+    model_cfg.MANO.DATA_DIR = f'{WILOR_ROOT}/mano_data/'
+    model_cfg.MANO.MODEL_PATH = f'{WILOR_ROOT}/mano_data/'
+    model_cfg.MANO.MEAN_PARAMS = f'{WILOR_ROOT}/mano_data/mano_mean_params.npz'
+    model_cfg.EXTRA.FOCAL_LENGTH = int(focal_length * model_cfg.MODEL.IMAGE_SIZE / max(img_size))
+    model_cfg.freeze()
+
+    # Override some config values, to crop bbox correctly
+    if ('vit' in model_cfg.MODEL.BACKBONE.TYPE) and ('BBOX_SHAPE' not in model_cfg.MODEL):
+        model_cfg.defrost()
+        assert (
+            model_cfg.MODEL.IMAGE_SIZE == 256
+        ), f"MODEL.IMAGE_SIZE ({model_cfg.MODEL.IMAGE_SIZE}) should be 256 for ViT backbone"
+        model_cfg.MODEL.BBOX_SHAPE = [192, 256]
+        model_cfg.freeze()
+
+    # Update config to be compatible with demo
+    if ('PRETRAINED_WEIGHTS' in model_cfg.MODEL.BACKBONE):
+        model_cfg.defrost()
+        model_cfg.MODEL.BACKBONE.pop('PRETRAINED_WEIGHTS')
+        model_cfg.freeze()
+
+    model = WiLoR.load_from_checkpoint(checkpoint_path, strict=False, cfg=model_cfg)
     return model, model_cfg
 
 
