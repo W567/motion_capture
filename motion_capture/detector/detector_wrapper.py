@@ -5,7 +5,6 @@ Hand and Body Detection Model Wrapper
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Union
-import sys
 import torch
 import numpy as np
 import cv2
@@ -16,6 +15,7 @@ from motion_capture.utils.utils import (
     PASCAL_CLASSES,
     CHECKPOINT_FILE,
     FONT_PATH,
+    WILOR_ROOT,
 )
 
 # hand object detector
@@ -34,7 +34,7 @@ from hand_object_detector.faster_rcnn.resnet import resnet
 np.random.seed(hand_object_detector_cfg.RNG_SEED)
 
 
-BOX_ANNOTATOR = sv.BoundingBoxAnnotator()
+BOX_ANNOTATOR = sv.BoxAnnotator()
 LABEL_ANNOTATOR = sv.LabelAnnotator()
 
 
@@ -56,6 +56,8 @@ class DetectionModelFactory:
             return MediapipeHandModel(**model_config)
         elif model == "yolo":
             return YoloModel(**model_config)
+        elif model == "yolo_hand":
+            return YoloHandModel(**model_config)
         else:
             raise ValueError(f"Unknown model: {model}")
 
@@ -444,3 +446,52 @@ class YoloModel(DetectionModelBase):
             scene=visualization, detections=detections, labels=labels_with_scores
         )
         return body_detections, visualization
+
+
+class YoloHandModel(DetectionModelBase):
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        margin: int = 10,
+        device: str = "cuda:0",
+    ):
+        self.threshold = threshold
+        self.margin = margin
+        self.device = device
+
+        if self.threshold > 0.6:
+            print(f"Warning: setting threshold to {self.threshold} for YoloHandModel,"
+                  f"which may be too high, consider setting it around 0.5")
+
+        # init model
+        from ultralytics import YOLO
+
+        self.detector = YOLO(f"{WILOR_ROOT}/pretrained_models/detector.pt")
+        self.detector = self.detector.to(device)
+
+    def predict(self, im):
+        # im : BGR image
+        results = self.detector(im, conf=self.threshold, verbose=False)[0]
+        detections = sv.Detections.from_ultralytics(results)
+        xyxys = [xyxy for xyxy in detections.xyxy]
+        scores = detections.confidence.tolist()
+        hand_detections = []
+        for i, detection in enumerate(detections):
+            label = "left_hand" if detection[5]['class_name'] == 'left' else "right_hand"
+            hand_detection = DetectionResult(
+                label=label,
+                rect=np.array([xyxys[i][0], xyxys[i][1], xyxys[i][2], xyxys[i][3]]),
+                score=scores[i],
+            )
+            hand_detections.append(hand_detection)
+
+        # visualize
+        labels = [self.detector.names[i] for i in detections.class_id]
+        labels_with_scores = [f"{label} {score:.2f}" for label, score in zip(labels, scores)]
+        visualization = im.copy()
+        visualization = cv2.cvtColor(visualization, cv2.COLOR_BGR2RGB)
+        visualization = BOX_ANNOTATOR.annotate(scene=visualization, detections=detections)
+        visualization = LABEL_ANNOTATOR.annotate(
+            scene=visualization, detections=detections, labels=labels_with_scores
+        )
+        return hand_detections, visualization
